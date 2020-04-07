@@ -58,6 +58,3 @@ run {
   args = ['run', mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$mainClassName", "--on-redeploy=$doOnChange"]
 }
 
-task wrapper(type: Wrapper) {
-  gradleVersion = '4.6'
-}

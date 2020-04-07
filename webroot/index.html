@@ -3,15 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <title>Welcome to KRY</title>
+    <STYLE type="text/css">
+    H1 {
+        text-align: center;
+        }
+    table, th, td {
+        border: 0px ;
+    }
+
+    H2 {
+        text-align: center;
+        color: blue;
+    }
+
+    th, td {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+    .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 6px 18px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 13px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+
+    ul {
+        font-size: 18px;
+        color: blue;
+    }
+
+    #myProgress {
+    align: center
+      width: 60%;
+      background-color: #ddd;
+    }
+
+    #myBar {
+      align: center
+      width: 100%;
+      height: 30px;
+      background-color: #4CAF50;
+      text-align: center;
+      line-height: 30px;
+      color: white;
+    }
+ </STYLE>
 </head>
-<body>
-KRY status poller
+
+<body style="background-color:powderblue;">
+<H1> KRY status poller </H1>
+
+<table align="center">
+    <tr>
+        <th><U>Add Service</U></th>
+        <th><U>Delete Service</U></th>
+    </tr>
+    <td valign="top">
+        <label>URL:</label><br>
+        <input type="text" id="url-name" placeholder="http://www.kry.se"><br>
+        <label>Name:</label><br>
+        <input type="text" id="poller-name" placeholder="kry"><br>
+        <button type="button" class="button" id="post-service">Add</button>
+    </td>
+    <td valign="top">
+        <label>Name:</label><br>
+        <input type="text" id="del-poller-name" placeholder="kry"><br>
+        <button type="button" class="button" id="del-service">Delete</button>
+    </td>
+</table>
+
+<br>
+<div align="center" id="myProgress">
+    <div align="center" id="myBar"></div>
+</div>
+
+
+<H2><U><I>Polling status</I></U></H2>
+
 <ul id="service-list">
 </ul>
-<input type="text" id="url-name">
-<button id="post-service">Save</button>
-
 </body>
-<script src="static/code.js">
+
+<script>
+/* Hande polling status */
+const listContainer = document.querySelector('#service-list');
+let servicesRequest = new Request('/service');
+fetch(servicesRequest)
+.then(function(response) { return response.json(); })
+.then(function(serviceList) {
+  serviceList.forEach(service => {
+    var li = document.createElement("li");
+    var today = new Date();
+    var currentTime = (today.getHours()<10?'0':'') + today.getHours() + ":" + (today.getMinutes()<10?'0':'') + today.getMinutes()  + ":" + (today.getSeconds()<10?'0':'') + today.getSeconds();
+    li.appendChild(document.createTextNode(service.name +  ' ..... ' + currentTime + ' ..... status: ..... ' + service.status));
+    listContainer.appendChild(li);
+  });
+});
+
+/* Hande Add button */
+const saveButton = document.querySelector('#post-service');
+ saveButton.onclick = evt => {
+     let urlName = document.querySelector('#url-name').value;
+     let pollerName = document.querySelector('#poller-name').value;
+    if (!urlName || !pollerName)
+    {
+         alert ("Fields cannot be empty");
+    } else {
+     fetch('/service', {
+     method: 'post',
+     headers: {
+     'Accept': 'application/json, text/plain, */*',
+     'Content-Type': 'application/json'
+     },
+   body: JSON.stringify({action:"add", url:urlName, name:pollerName})
+ }).then(res=> location.reload());
+ move();
+ }
+}
+
+/* Hande Delete button */
+const deleteButton = document.querySelector('#del-service');
+ deleteButton.onclick = evt => {
+      let delPollerName = document.querySelector('#del-poller-name').value;
+      if (!delPollerName)
+      {
+         alert ("Fields cannot be empty");
+      } else {
+      fetch('/service', {
+      method: 'post',
+      headers: {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+      },
+    body: JSON.stringify({action:"del", url:null, name:delPollerName})
+  }).then(res=> location.reload());
+  move();
+  }
+}
+
+/* Hande progress bar */
+var i = 0;
+function move() {
+  if (i == 0) {
+    i = 1;
+    var elem = document.getElementById("myBar");
+    var width = 10;
+    var id = setInterval(frame, 10);
+    function frame() {
+      if (width >= 100) {
+        clearInterval(id);
+        i = 0;
+      } else {
+        width++;
+        elem.style.width = width + "%";
+        elem.innerHTML = width  + "%";
+      }
+    }
+  }
+}
 </script>
+
 </html>
