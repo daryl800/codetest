@@ -37,6 +37,7 @@ public class MainVerticle extends AbstractVerticle {
     loadServiceFromDB(servicesMap);
 
     vertx.setPeriodic(1000 * 30, timerId -> {
+      System.out.println(servicesMap);
       poller.pollServices(servicesMap);
     });
 
